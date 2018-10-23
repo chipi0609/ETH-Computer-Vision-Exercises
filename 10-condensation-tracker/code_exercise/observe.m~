@@ -1,0 +1,25 @@
+function particles_w = observe(particles,frame,H,W,hist_bin,hist_target,sigma_observe)
+    particles_w = zeros(size(particles,1),1);
+    
+    sizeFrame = size(frame);
+    heightFrame = sizeFrame(1);
+    widthFrame = sizeFrame(2);
+    
+    for i = 1:size(particles,1)
+        % Compute color histogram for each particle
+        xMin = 
+        color_histogram(round(min(max(1,meanStateAPosteriori(i,1)-0.5*WidthBB),widthFrame)),round(min(max(1,meanStateAPosteriori(i,2)-0.5*HeightBB),heightFrame)),round(min(max(1,meanStateAPosteriori(i,1)+0.5*WidthBB),widthFrame)),round(min(max(1,meanStateAPosteriori(i,2)+0.5*HeightBB),heightFrame)),frame,params.hist_bin);
+%         xMin = ceil(mod(particles(i,1) - W/2,widthFrame));
+%         xMax = floor(mod(particles(i,1) + W/2,widthFrame));
+%         yMin = ceil(mod(particles(i,2) - H/2,heightFrame));
+%         yMax = floor(mod(particles(i,2) + H/2,heightFrame));
+        hist = color_histogram(xMin,yMin,xMax,yMax,frame,hist_bin);
+        
+        % Update particle weights
+        distance = chi2_cost(hist,hist_target);
+        particles_w(i) = 1/(sqrt(2*pi) * sigma_observe) * exp(-distance/(2*sigma_observe*sigma_observe));
+        if isnan(particles_w(i))
+            particles_w(i) = 0;
+        end
+    end
+end

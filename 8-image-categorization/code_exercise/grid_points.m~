@@ -1,0 +1,14 @@
+function vPoints = grid_points(img,nPointsX,nPointsY,border)
+    [height,width,~] = size(img);
+    h = height - 2*border;
+    w = width - 2*border;
+    grid_Y = h/nPointsY);
+    grid_X = floor(w/nPointsX);
+    
+    Y = floor(1+border + grid_Y/2 ): grid_Y :ceil(height-border/2 - grid_Y/2)
+    X = floor(1+border + grid_X/2 ): grid_X :ceil(height-border/2 - grid_X/2)
+    
+    [y,x] = meshgrid(Y,X);
+    c=cat(2,y',x');
+    vPoints=reshape(c,[],2);
+end

@@ -1,0 +1,101 @@
+function [in1, in2, out1, out2, m, F] = ransac8pF(xy1, xy2, threshold)
+
+iteration = 1000;
+number = size(xy1,2);
+bestInNum = 0; 
+in1 = xy1;
+in2 = xy2;
+out1 = [];
+out2 = [];
+N = 8;
+m = 0;
+p = 0;
+inlierRatio = 0;
+
+
+for i = 1:300
+    %if p > 0.99
+        %break;
+    %end
+    % Randomly select 8 points in each data set
+    xy1_s = ones(3,8);
+    xy2_s = ones(3,8);
+    
+    for j = 1:8
+        xy1_s(1:2,j) = xy1(:,randi(number));
+        xy2_s(1:2,j) = xy2(:,randi(number));
+    end
+    
+    [Fh,F] = fundamentalMatrix(xy1_s,xy2_s);
+    xy1_homo = [xy1;ones(1,number)];
+    xy2_homo = [xy2;ones(1,number)];
+    %[nxy1,T1] = normalizePoints2d(xy1_homo);
+    %[nxy2,T2] = normalizePoints2d(xy2_homo);
+    %for j = 1:8
+        %u1 = nxy1(1,randi(number));
+        %v1 = nxy1(2,randi(number));
+        %u2 = nxy2(1,randi(number));
+        %v2 = nxy2(2,randi(number));
+        
+        %A(j,:) = [u2*u1 u2*v1 u2 u1*v2 v1*v2 v2 u1 v1 1];
+    %end
+    
+     % Solve using SVD
+    %[U,S,V] = svd(A);
+    %F = transpose(reshape(V(:,9),[3,3]));
+    
+    %[Uh,Dh,Vh] = svd(F);
+    %Dh(3,3) = 0;
+    
+    %F = T2' * F * T1;
+    %Fh = T2' * (Uh * Dh * Vh') * T1;
+    
+    % Compute the distances between all points with the fitting model
+    %xy2_homo'*Fh*xy1_homo
+    %d1 = (Fh*xy1_homo - xy2_homo).^2;
+    %d1 = sqrt(sum(d1,1));
+    %d1 = sum((xy2_homo' * Fh * xy1_homo).^2,1);
+    d1 = distPointLine(xy2_homo,Fh * xy1_homo);
+    for j = 1:number
+        d1(:,j) 
+    end
+    
+    %d2 = (Fh'*xy2_homo - xy1_homo).^2;
+    %d2 = sqrt(sum(d2,1));
+    %d2 = sum((xy1_homo' * Fh' * xy2_homo).^2,1);
+    d2 = distPointLine(xy1_homo,Fh' * xy2_homo);
+    
+    % Compute the inliers with distances smaller than the threshold
+    inlierIndices = find(d1+d2 < threshold);
+    in1_candidates = xy1(:,inlierIndices);
+    in2_candidates = xy2(:,inlierIndices);
+    
+    % Update the number of inliers and fitting model if better model is found
+    %if size(inlierIndices,2) <= inlierRatio * number
+        %continue;
+    %end
+    if size(inlierIndices,2) <= 1000
+        continue;
+    end
+        
+    if size(inlierIndices,2) > 1000
+        if size(inlierIndices,2) > bestInNum
+            bestInNum = size(inlierIndices,2);
+            in1 = in1_candidates;
+            in2 = in2_candidates;
+            outlierIndices = setdiff(linspace(1,number,number),inlierIndices);
+            out1 = xy1(:,outlierIndices);
+            out2 = xy2(:,outlierIndices);
+        end
+    end
+    
+    %inlierRatio = bestInNum/number;
+    %p = 1 - (1-inlierRatio^N)^m;
+    m = m+1;
+end
+
+[F,f] = fundamentalMatrix([in1;ones(1,size(in1,2))],[in2;ones(1,size(in2,2))]);
+
+end
+
+

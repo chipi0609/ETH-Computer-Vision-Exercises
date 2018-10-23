@@ -1,0 +1,3 @@
+function [n] = nTrialNeeded(inlierRation,nSamples,desiredConfidence)
+    n = 
+end
